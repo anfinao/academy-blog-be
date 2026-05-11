@@ -2,12 +2,15 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleEntity } from '../../data/entities/article/article.entity';
 import { Repository } from 'typeorm';
+import { EventsGateway } from '../websocket/events.gateway';
+import { WEBSOCKET_TYPES } from './constants';
 
 @Injectable()
 export class ArticlesService {
     constructor(
         @InjectRepository(ArticleEntity)
         private readonly repository: Repository<ArticleEntity>,
+        private readonly eventsGateway: EventsGateway,
     ) { }
 
     async findOne(id: string) {
@@ -54,19 +57,40 @@ export class ArticlesService {
 
     async ratingUp(id: string) {
         const article = await this.repository.findOneBy({ id });
-        const newRating = (article?.rating ?? 0) + 1;
-        return this.updateRating(id, newRating);
+        const prevRating = article?.rating ?? 0;
+        const newRating = prevRating + 1;
+        const result = await this.updateRating(id, newRating);
+
+        return result;
     }
 
     async ratingDown(id: string) {
         const article = await this.repository.findOneBy({ id });
-        const newRating = (article?.rating ?? 0) - 1;
-        return this.updateRating(id, newRating);
+        const prevRating = article?.rating ?? 0;
+        const newRating = prevRating - 1;
+        const result = await this.updateRating(id, newRating);
+
+        return result;
     }
 
     async updateRating(id: string, rating: number) {
+        const article = await this.repository.findOneBy({ id });
+        const prevRating = article?.rating;
         await this.repository.update(id, { rating });
-        return this.repository.findOneBy({ id });
+
+        const result = await this.repository.findOneBy({ id });
+
+        // Отправляем событие WebSocket
+        this.eventsGateway.server.emit('article-rating-changed', {
+            type: WEBSOCKET_TYPES.ARTICLE_RATING_CHANGED,
+            payload: {
+                articleId: id,
+                rating,
+                prevRating,
+            },
+        });
+
+        return result;
     }
 
     async remove(id: string) {
@@ -85,9 +109,11 @@ export class ArticlesService {
             return null;
         }
 
+        const prevRating = article.avgRating;
+        const prevVotes = article.votes || [];
+
         // Добавляем голос в массив
-        const votes = article.votes || [];
-        votes.push(vote);
+        const votes = [...prevVotes, vote];
 
         // Пересчёт средней оценки
         const count = votes.length;
@@ -98,6 +124,18 @@ export class ArticlesService {
         article.votesCount = count;
         article.avgRating = avgRating;
 
-        return this.repository.save(article);
+        const result = await this.repository.save(article);
+
+        // Отправляем событие WebSocket об изменении рейтинга
+        this.eventsGateway.server.emit('article-rating-changed', {
+            type: WEBSOCKET_TYPES.ARTICLE_RATING_CHANGED,
+            payload: {
+                articleId,
+                rating: avgRating,
+                prevRating,
+            },
+        });
+
+        return result;
     }
 }

@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentEntity } from 'src/articles/data/entities/comment/comment.entity';
 import { Repository } from 'typeorm';
+import { EventsGateway } from '../websocket/events.gateway';
+import { WEBSOCKET_TYPES } from './constants';
 
 @Injectable()
 export class CommentsService {
     constructor(
         @InjectRepository(CommentEntity)
         private readonly repository: Repository<CommentEntity>,
+        private readonly eventsGateway: EventsGateway,
     ) { }
 
     async findOne(id: string) {
@@ -17,7 +20,21 @@ export class CommentsService {
     // Создание комментария
     async create(dto: Partial<CommentEntity>) {
         const comment = this.repository.create(dto);
-        return this.repository.save(comment);
+        const result = await this.repository.save(comment);
+
+        // Отправляем событие создания комментария
+        this.eventsGateway.server.emit('comment-created', {
+            type: WEBSOCKET_TYPES.COMMENT_CREATED,
+            payload: {
+                commentId: result.id,
+                articleId: result.articleId,
+                content: result.content,
+                username: result.username,
+                createdAt: result.createdAt,
+            },
+        });
+
+        return result;
     }
 
     // Получение комментариев по ID статьи
@@ -40,8 +57,21 @@ export class CommentsService {
         if (!comment) {
             return null;
         }
-        comment.rating = (comment.rating || 0) + 1;
-        return this.repository.save(comment);
+        const prevRating = comment.rating || 0;
+        comment.rating = prevRating + 1;
+        const result = await this.repository.save(comment);
+
+        // Отправляем событие изменения рейтинга комментария
+        this.eventsGateway.server.emit('comment-rating-changed', {
+            type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
+            payload: {
+                commentId: id,
+                articleId: comment.articleId,
+                rating: result.rating,
+                prevRating,
+            },
+        });
+
     }
 
     // Уменьшение рейтинга на 1
@@ -50,8 +80,22 @@ export class CommentsService {
         if (!comment) {
             return null;
         }
-        comment.rating = (comment.rating || 0) - 1;
-        return this.repository.save(comment);
+        const prevRating = comment.rating || 0;
+        comment.rating = prevRating - 1;
+        const result = await this.repository.save(comment);
+
+        // Отправляем событие изменения рейтинга комментария
+        this.eventsGateway.server.emit('comment-rating-changed', {
+            type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
+            payload: {
+                commentId: id,
+                articleId: comment.articleId,
+                rating: result.rating,
+                prevRating,
+            },
+        });
+
+        return result;
     }
 
     async addVote(commentId: string, vote: number) {
@@ -64,9 +108,10 @@ export class CommentsService {
             return null;
         }
 
+        const prevAvgRating = comment.avgRating;
+
         // Добавляем голос в массив
-        const votes = comment.votes || [];
-        votes.push(vote);
+        const votes = [...(comment.votes || []), vote];
 
         // Пересчёт средней оценки
         const count = votes.length;
@@ -77,6 +122,19 @@ export class CommentsService {
         comment.votesCount = count;
         comment.avgRating = avgRating;
 
-        return this.repository.save(comment);
+        const result = await this.repository.save(comment);
+
+        // Отправляем событие изменения рейтинга комментария
+        this.eventsGateway.server.emit('comment-rating-changed', {
+            type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
+            payload: {
+                commentId,
+                articleId: comment.articleId,
+                rating: avgRating,
+                prevRating: prevAvgRating,
+            },
+        });
+
+        return result;
     }
 }

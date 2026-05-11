@@ -11,6 +11,7 @@ import { CategoriesService } from './core/categories/categories.service';
 import { CategoryEntity } from './data/entities/category/category';
 import { ArticlesResolver } from './core/articles/articles.resolver';
 import { CommentsResolver } from './core/comments/comments.resolver';
+import { EventsGateway } from './core/websocket/events.gateway';
 
 @Module({
     imports: [TypeOrmModule.forFeature([ArticleEntity, CommentEntity, CategoryEntity])],
@@ -21,6 +22,8 @@ import { CommentsResolver } from './core/comments/comments.resolver';
         CommentsService,
         CommentsResolver,
         CategoriesService,
-    ]
+        EventsGateway
+    ],
+    exports: [EventsGateway],
 })
 export class ArticlesModule { }
