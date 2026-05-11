@@ -13,6 +13,7 @@ export class ArticlesService {
     async findOne(id: string) {
         const article = await this.repository.findOne({
             where: { id },
+            relations: ['comments']
         });
 
         if (!article) {
@@ -72,5 +73,31 @@ export class ArticlesService {
         const article = await this.repository.findOneBy({ id });
         if (!article) throw new NotFoundException('Статья не найдена');
         return this.repository.remove(article);
+    }
+
+    async addVote(articleId: string, vote: number) {
+        if (vote < 1 || vote > 5) {
+            throw new Error('Оценка должна быть от 1 до 5');
+        }
+
+        const article = await this.repository.findOneBy({ id: articleId });
+        if (!article) {
+            return null;
+        }
+
+        // Добавляем голос в массив
+        const votes = article.votes || [];
+        votes.push(vote);
+
+        // Пересчёт средней оценки
+        const count = votes.length;
+        const sum = votes.reduce((acc, v) => acc + v, 0);
+        const avgRating = sum / count;
+
+        article.votes = votes;
+        article.votesCount = count;
+        article.avgRating = avgRating;
+
+        return this.repository.save(article);
     }
 }

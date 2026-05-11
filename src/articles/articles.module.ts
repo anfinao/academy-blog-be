@@ -9,10 +9,18 @@ import { CommentEntity } from './data/entities/comment/comment.entity';
 import { CategoriesController } from './core/categories/categories.controller';
 import { CategoriesService } from './core/categories/categories.service';
 import { CategoryEntity } from './data/entities/category/category';
+import { ArticlesResolver } from './core/articles/articles.resolver';
+import { CommentsResolver } from './core/comments/comments.resolver';
 
 @Module({
     imports: [TypeOrmModule.forFeature([ArticleEntity, CommentEntity, CategoryEntity])],
     controllers: [ArticlesController, CommentsController, CategoriesController],
-    providers: [ArticlesService, CommentsService, CategoriesService]
+    providers: [
+        ArticlesService,
+        ArticlesResolver,
+        CommentsService,
+        CommentsResolver,
+        CategoriesService,
+    ]
 })
 export class ArticlesModule { }

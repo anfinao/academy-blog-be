@@ -1,0 +1,99 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ArticleEntity {
+  avgRating: Float
+  category: CategoryEntity
+  categoryId: String
+  comments: [CommentEntity]
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  imgSrc: String!
+  rating: Float!
+  title: String!
+  updatedAt: DateTime!
+  votes: [Int!]
+  votesCount: Int
+}
+
+input ArticlesQueryInput {
+  cumulative: Boolean! = false
+  limit: Int! = 10
+  page: Int! = 1
+}
+
+type ArticlesResponseOutput {
+  items: [ArticleEntity!]!
+  limit: Int!
+  page: Int!
+  total: Int!
+}
+
+type CategoryEntity {
+  articles: [ArticleEntity]
+  createdAt: DateTime!
+  id: ID!
+  name: String!
+  updatedAt: DateTime
+}
+
+type CommentEntity {
+  article: [ArticleEntity!]!
+  articleId: String!
+  avgRating: Float!
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  rating: Float!
+  username: String!
+  votes: [Int!]
+  votesCount: Int!
+}
+
+input CreateArticleDto {
+  categoryId: String
+  content: String!
+  image: String
+  imgSrc: String
+  title: String!
+}
+
+input CreateCommentInput {
+  articleId: String!
+  content: String!
+  username: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  articleRatingDown(id: ID!): ArticleEntity!
+  articleRatingUp(id: ID!): ArticleEntity!
+  commentRatingDown(id: ID!): CommentEntity!
+  commentRatingUp(id: ID!): CommentEntity!
+  createArticle(createArticleInput: CreateArticleDto!): ArticleEntity!
+  createComment(createComment: CreateCommentInput!): CommentEntity!
+  removeArticle(id: ID!): Boolean!
+  updateArticle(id: ID!, updateArticleInput: UpdateArticleInput!): ArticleEntity!
+  updateCommentRating(id: ID!, rating: Float!): CommentEntity!
+  voteComment(id: ID!, vote: Float!): CommentEntity!
+}
+
+type Query {
+  article(id: ID!): ArticleEntity
+  articles(query: ArticlesQueryInput): ArticlesResponseOutput!
+  comment(id: ID!): CommentEntity
+  commentsByArticle(articleId: ID!): [CommentEntity!]!
+}
+
+input UpdateArticleInput {
+  categoryId: String
+  content: String!
+  imgSrc: String
+  title: String!
+}
