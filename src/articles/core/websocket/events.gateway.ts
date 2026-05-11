@@ -3,9 +3,11 @@ import {
     WebSocketServer,
     SubscribeMessage,
     OnGatewayConnection,
-    OnGatewayDisconnect
+    OnGatewayDisconnect,
+    ConnectedSocket,
+    MessageBody
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Server, WebSocket } from 'ws';
 import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
@@ -14,7 +16,7 @@ import { Injectable, Logger } from '@nestjs/common';
         origin: '*',
         methods: ['GET', 'POST']
     },
-    namespace: '/events',
+    //namespace: '/events',
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
@@ -22,25 +24,100 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     private readonly logger = new Logger(EventsGateway.name);
 
-    handleConnection(client: Socket) {
-        this.logger.log(`Клиент подключился: ${client.id}`);
+    // Хранилище клиентов: clientId -> WebSocket
+    private clients = new Map<string, WebSocket>();
+
+    // Хранилище подписок: clientId -> Set<topic>
+    private clientSubscriptions = new Map<string, Set<string>>();
+
+    handleConnection(@ConnectedSocket() client: WebSocket) {
+        const clientId = this.generateClientId(client);
+        this.clients.set(clientId, client);
+        this.clientSubscriptions.set(clientId, new Set());
+        this.logger.log(`Клиент подключился: ${clientId}`);
     }
 
-    handleDisconnect(client: Socket) {
-        this.logger.log(`Клиент отключился: ${client.id}`);
+    handleDisconnect(@ConnectedSocket() client: WebSocket) {
+        const clientId = this.getClientId(client);
+        if (clientId) {
+            this.clients.delete(clientId);
+            this.clientSubscriptions.delete(clientId);
+            this.logger.log(`Клиент отключился: ${clientId}`);
+        }
     }
 
-    // Клиент может подписаться на события статьи
     @SubscribeMessage('subscribe-article')
-    handleSubscribeArticle(client: Socket, articleId: string) {
-        client.join(`article:${articleId}`);
-        this.logger.log(`Клиент ${client.id} подписался на статью ${articleId}`);
+    handleSubscribeArticle(@ConnectedSocket() client: WebSocket, @MessageBody() articleId: string) {
+        const clientId = this.getClientId(client);
+        if (!clientId) return;
+
+        const subscriptions = this.clientSubscriptions.get(clientId);
+        if (subscriptions) {
+            subscriptions.add(`article:${articleId}`);
+        }
+        this.logger.log(`Клиент ${clientId} подписался на статью ${articleId}`);
+        client.send(JSON.stringify({
+            event: 'subscribed',
+            topic: articleId,
+            clientId
+        }));
     }
 
-    // Клиент может подписаться на все события
+    @SubscribeMessage('unsubscribe-article')
+    handleUnsubscribeArticle(@ConnectedSocket() client: WebSocket, @MessageBody() articleId: string) {
+        const clientId = this.getClientId(client);
+        if (!clientId) return;
+
+        const subscriptions = this.clientSubscriptions.get(clientId);
+        if (subscriptions) {
+            subscriptions.delete(`article:${articleId}`);
+        }
+        this.logger.log(`Клиент ${clientId} отписался от статьи ${articleId}`);
+        client.send(JSON.stringify({
+            event: 'unsubscribed',
+            topic: articleId,
+            clientId
+        }));
+    }
+
     @SubscribeMessage('subscribe-all')
-    handleSubscribeAll(client: Socket) {
-        client.join('all-events');
-        this.logger.log(`Клиент ${client.id} подписался на все события`);
+    handleSubscribeAll(@ConnectedSocket() client: WebSocket) {
+        const clientId = this.getClientId(client);
+        if (!clientId) return;
+
+        const subscriptions = this.clientSubscriptions.get(clientId);
+        if (subscriptions) {
+            subscriptions.add('all-events');
+        }
+        this.logger.log(`Клиент ${clientId} подписался на все события`);
+    }
+
+    // Метод для отправки события конкретному клиенту
+    sendToClient(clientId: string, event: string, data: any) {
+        const client = this.clients.get(clientId);
+        if (client && client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify({ event, ...data }));
+        }
+    }
+
+    // Метод для отправки события всем клиентам в подписке
+    sendToTopic(topic: string, event: string, data: any) {
+        const message = JSON.stringify({ event, ...data });
+        for (const [clientId, subscriptions] of this.clientSubscriptions.entries()) {
+            if (subscriptions.has(topic) || subscriptions.has('all-events')) {
+                this.sendToClient(clientId, event, data);
+            }
+        }
+    }
+
+    private generateClientId(client: WebSocket): string {
+        return `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    }
+
+    private getClientId(client: WebSocket): string | null {
+        for (const [clientId, ws] of this.clients.entries()) {
+            if (ws === client) return clientId;
+        }
+        return null;
     }
 }
