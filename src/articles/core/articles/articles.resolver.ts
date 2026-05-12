@@ -56,4 +56,12 @@ export class ArticlesResolver {
         await this.articlesService.remove(id);
         return true;
     }
+
+    @Mutation(() => ArticleEntity)
+    async voteArticle(
+        @Args('id', { type: () => ID }) id: string,
+        @Args('vote') vote: number,
+    ) {
+        return this.articlesService.addVote(id, vote);
+    }
 }

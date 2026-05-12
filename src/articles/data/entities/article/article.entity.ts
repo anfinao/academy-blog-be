@@ -3,6 +3,7 @@ import { CommentEntity } from "../comment/comment.entity";
 import { CategoryEntity } from "../category/category";
 import { ApiProperty } from "@nestjs/swagger";
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql";
+import { Transform } from "class-transformer";
 
 @Entity('article')
 @ObjectType()

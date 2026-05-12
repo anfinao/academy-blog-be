@@ -118,7 +118,7 @@ export class ArticlesService {
 
         // Пересчёт средней оценки
         const count = votes.length;
-        const sum = votes.reduce((acc, v) => acc + v, 0);
+        const sum = votes.reduce((acc, v) => acc + Number(v), 0);
         const avgRating = sum / count;
 
         article.votes = votes;

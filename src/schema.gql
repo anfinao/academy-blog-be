@@ -81,6 +81,7 @@ type Mutation {
   removeArticle(id: ID!): Boolean!
   updateArticle(id: ID!, updateArticleInput: UpdateArticleInput!): ArticleEntity!
   updateCommentRating(id: ID!, rating: Float!): CommentEntity!
+  voteArticle(id: ID!, vote: Float!): ArticleEntity!
   voteComment(id: ID!, vote: Float!): CommentEntity!
 }
 
