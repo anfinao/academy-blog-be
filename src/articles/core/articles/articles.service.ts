@@ -59,7 +59,7 @@ export class ArticlesService {
         const article = await this.repository.findOneBy({ id });
         const prevRating = article?.rating ?? 0;
         const newRating = prevRating + 1;
-        const result = await this.updateRating(id, newRating);
+        const result = await this.updateRating(id, newRating, article);
 
         return result;
     }
@@ -68,20 +68,21 @@ export class ArticlesService {
         const article = await this.repository.findOneBy({ id });
         const prevRating = article?.rating ?? 0;
         const newRating = prevRating - 1;
-        const result = await this.updateRating(id, newRating);
+        const result = await this.updateRating(id, newRating, article);
 
         return result;
     }
 
-    async updateRating(id: string, rating: number) {
-        const article = await this.repository.findOneBy({ id });
+    async updateRating(id: string, rating: number, articleEntity?: ArticleEntity | null) {
+        const article = articleEntity ? articleEntity : await this.repository.findOneBy({ id });
+
         const prevRating = article?.rating;
         await this.repository.update(id, { rating });
 
         const result = await this.repository.findOneBy({ id });
 
         // Отправляем событие WebSocket
-        this.eventsGateway.server.emit('article-rating-changed', {
+        this.eventsGateway.server.to(`article:${id}`).emit('article-rating-changed', {
             type: WEBSOCKET_TYPES.ARTICLE_RATING_CHANGED,
             payload: {
                 articleId: id,
@@ -127,7 +128,7 @@ export class ArticlesService {
         const result = await this.repository.save(article);
 
         // Отправляем событие WebSocket об изменении рейтинга
-        this.eventsGateway.server.emit('article-rating-changed', {
+        this.eventsGateway.server.to(`article:${articleId}`).emit('article-rating-changed', {
             type: WEBSOCKET_TYPES.ARTICLE_RATING_CHANGED,
             payload: {
                 articleId,

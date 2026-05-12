@@ -23,7 +23,7 @@ export class CommentsService {
         const result = await this.repository.save(comment);
 
         // Отправляем событие создания комментария
-        this.eventsGateway.server.emit('comment-created', {
+        this.eventsGateway.server.to(`article:${result.articleId}`).emit('comment-created', {
             type: WEBSOCKET_TYPES.COMMENT_CREATED,
             payload: {
                 commentId: result.id,
@@ -62,7 +62,7 @@ export class CommentsService {
         const result = await this.repository.save(comment);
 
         // Отправляем событие изменения рейтинга комментария
-        this.eventsGateway.server.emit('comment-rating-changed', {
+        this.eventsGateway.server.to(`article:${result.articleId}`).emit('comment-rating-changed', {
             type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
             payload: {
                 commentId: id,
@@ -85,7 +85,7 @@ export class CommentsService {
         const result = await this.repository.save(comment);
 
         // Отправляем событие изменения рейтинга комментария
-        this.eventsGateway.server.emit('comment-rating-changed', {
+        this.eventsGateway.server.to(`article:${result.articleId}`).emit('comment-rating-changed', {
             type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
             payload: {
                 commentId: id,
@@ -125,7 +125,7 @@ export class CommentsService {
         const result = await this.repository.save(comment);
 
         // Отправляем событие изменения рейтинга комментария
-        this.eventsGateway.server.emit('comment-rating-changed', {
+        this.eventsGateway.server.to(`article:${result.articleId}`).emit('comment-rating-changed', {
             type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
             payload: {
                 commentId,

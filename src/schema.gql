@@ -10,7 +10,7 @@ type ArticleEntity {
   content: String!
   createdAt: DateTime!
   id: ID!
-  imgSrc: String!
+  imgSrc: String
   rating: Float!
   title: String!
   updatedAt: DateTime!

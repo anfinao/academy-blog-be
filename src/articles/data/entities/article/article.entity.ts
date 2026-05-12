@@ -22,7 +22,7 @@ export class ArticleEntity {
     @Column()
     content: string;
 
-    @Field()
+    @Field({ nullable: true })
     @Column({ nullable: true })
     imgSrc: string;
 
