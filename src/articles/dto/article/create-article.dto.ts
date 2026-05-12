@@ -6,6 +6,6 @@ export class CreateArticleDto {
     @ApiProperty({ example: 'Полный текст статьи', description: 'Содержимое статьи' })
     content: string;
     image?: string;
-    @ApiProperty({ example: 1, description: 'ID категории' })
+    @ApiProperty({ example: 1, description: 'ID категории', required: false })
     categoryId?: string;
 }
