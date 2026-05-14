@@ -31,7 +31,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private clientSubscriptions = new Map<string, Set<string>>();
 
     handleConnection(@ConnectedSocket() client: WebSocket) {
-        const clientId = this.generateClientId(client);
+        const clientId = this.generateClientId();
         this.clients.set(clientId, client);
         this.clientSubscriptions.set(clientId, new Set());
         this.logger.log(`Клиент подключился: ${clientId}`);
@@ -102,7 +102,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Метод для отправки события всем клиентам в подписке
     sendToTopic(topic: string, event: string, data: any) {
-        const message = JSON.stringify({ event, ...data });
         for (const [clientId, subscriptions] of this.clientSubscriptions.entries()) {
             if (subscriptions.has(topic) || subscriptions.has('all-events')) {
                 this.sendToClient(clientId, event, data);
@@ -110,7 +109,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
     }
 
-    private generateClientId(client: WebSocket): string {
+    private generateClientId(): string {
         return `${Date.now()}-${Math.random().toString(36).substring(7)}`;
     }
 
