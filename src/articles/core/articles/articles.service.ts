@@ -82,7 +82,7 @@ export class ArticlesService {
         const result = await this.repository.findOneBy({ id });
 
         // Отправляем событие WebSocket
-        this.eventsGateway.server.to(`article:${id}`).emit('article-rating-changed', {
+        this.eventsGateway.sendToTopic(`article:${id}`, 'article-rating-changed', {
             type: WEBSOCKET_TYPES.ARTICLE_RATING_CHANGED,
             payload: {
                 articleId: id,
@@ -128,7 +128,7 @@ export class ArticlesService {
         const result = await this.repository.save(article);
 
         // Отправляем событие WebSocket об изменении рейтинга
-        this.eventsGateway.server.to(`article:${articleId}`).emit('article-rating-changed', {
+        this.eventsGateway.sendToTopic(`article:${articleId}`, 'article-rating-changed', {
             type: WEBSOCKET_TYPES.ARTICLE_RATING_CHANGED,
             payload: {
                 articleId,

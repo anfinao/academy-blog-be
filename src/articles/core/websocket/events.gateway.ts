@@ -30,17 +30,40 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.logger.log(`Клиент отключился: ${client.id}`);
     }
 
-    // Клиент может подписаться на события статьи
     @SubscribeMessage('subscribe-article')
     handleSubscribeArticle(client: Socket, articleId: string) {
         client.join(`article:${articleId}`);
+
         this.logger.log(`Клиент ${client.id} подписался на статью ${articleId}`);
+        client.emit('subscribe-article', {
+            event: 'subscribed',
+            topic: articleId,
+            clientId: client.id
+        });
     }
 
-    // Клиент может подписаться на все события
+    @SubscribeMessage('unsubscribe-article')
+    handleUnsubscribeArticle(client: Socket, articleId: string) {
+        client.leave(`article:${articleId}`);
+        this.logger.log(`Клиент ${client.id} отписался от на статьи ${articleId}`);
+        client.emit('unsubscribe-article', {
+            event: 'unsubscribe',
+            topic: articleId,
+            clientId: client.id
+        });
+    }
+
     @SubscribeMessage('subscribe-all')
     handleSubscribeAll(client: Socket) {
         client.join('all-events');
         this.logger.log(`Клиент ${client.id} подписался на все события`);
+        client.emit('subscribe-all', {
+            event: 'subscribed',
+            clientId: client.id
+        });
+    }
+
+    sendToTopic(topic: string, event: string, data: any) {
+        this.server.to(topic).emit(event, data);
     }
 }
