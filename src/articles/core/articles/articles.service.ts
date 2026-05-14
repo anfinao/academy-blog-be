@@ -84,7 +84,7 @@ export class ArticlesService {
         // Отправляем событие WebSocket
         this.eventsGateway.sendToTopic(`article:${id}`, 'article-rating-changed', {
             type: WEBSOCKET_TYPES.ARTICLE_RATING_CHANGED,
-            data: {
+            payload: {
                 articleId: id,
                 rating,
                 prevRating,

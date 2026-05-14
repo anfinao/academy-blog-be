@@ -11,6 +11,7 @@ import { join } from 'path';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { EventsGateway } from './articles/core/websocket/events.gateway';
+import { SseModule } from './articles/core/sse/sse.module';
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { EventsGateway } from './articles/core/websocket/events.gateway';
             autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
             sortSchema: true,
         }),
+        SseModule
     ],
     controllers: [AppController],
     providers: [AppService],
