@@ -1,5 +1,7 @@
 /uploads
 *.db
+.env
+.env.*
 
 # compiled output
 /dist

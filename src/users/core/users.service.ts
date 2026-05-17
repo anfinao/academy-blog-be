@@ -5,12 +5,15 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UserEntity } from '../data/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from '../enums/roles';
+import { RefreshToken } from '../data/entities/refresh-token.entity';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
+        @InjectRepository(RefreshToken)
+        private readonly refreshTokenRepository: Repository<RefreshToken>,
     ) { }
 
     async registerUser(createUserDto: CreateUserDto): Promise<UserEntity> {
@@ -25,7 +28,7 @@ export class UsersService {
         }
 
         const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const hashedPassword = await bcrypt.hash(password, 'eltex', saltRounds);
 
         const user = this.userRepository.create({
             username,
@@ -82,8 +85,18 @@ export class UsersService {
         return this.userRepository.findOne({ where: { id: userId } });
     }
 
+    async findOneById(userId: string): Promise<UserEntity | null> {
+        return this.userRepository.findOne({ where: { id: userId } });
+    }
+
     async findOneByUsername(username: string): Promise<UserEntity | null> {
         return this.userRepository.findOne({ where: { username } });
+    }
+
+    async findOneByLogin(login: string): Promise<UserEntity | null> {
+        return this.userRepository.findOne({
+            where: [{ username: login }, { email: login }]
+        });
     }
 
     async findOneByEmail(email: string): Promise<UserEntity | null> {
@@ -92,5 +105,21 @@ export class UsersService {
 
     async updateLastActive(userId: string): Promise<void> {
         await this.userRepository.update(userId, { lastActiveTime: new Date() });
+    }
+
+    async createRefreshToken(refreshToken: RefreshToken): Promise<RefreshToken> {
+        return this.refreshTokenRepository.save(refreshToken);
+    }
+
+    async findRefreshTokenByToken(token: string): Promise<RefreshToken | null> {
+        return this.refreshTokenRepository.findOne({ where: { token } });
+    }
+
+    async revokeRefreshToken(tokenId: string): Promise<void> {
+        await this.refreshTokenRepository.update(tokenId, { isRevoked: true });
+    }
+
+    async findRefreshTokensByUserId(userId: string): Promise<RefreshToken[]> {
+        return this.refreshTokenRepository.find({ where: { userId, isRevoked: false } });
     }
 }
