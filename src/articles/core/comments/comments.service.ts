@@ -72,6 +72,7 @@ export class CommentsService {
             },
         });
 
+        return result;
     }
 
     // Уменьшение рейтинга на 1
