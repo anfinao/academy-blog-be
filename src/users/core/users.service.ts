@@ -28,7 +28,7 @@ export class UsersService {
         }
 
         const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, 'eltex', saltRounds);
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         const user = this.userRepository.create({
             username,

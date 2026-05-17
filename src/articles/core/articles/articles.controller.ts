@@ -1,11 +1,15 @@
-import { Body, Controller, Delete, FileTypeValidator, Get, Param, ParseFilePipe, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, FileTypeValidator, Get, Param, ParseFilePipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { ArticleEntity } from 'src/articles/data/entities/article/article.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateArticleDto } from 'src/articles/dto/article/create-article.dto';
 import { diskStorage } from 'multer';
-import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { UpdateArticleDto } from 'src/articles/dto/article/update-article.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RoleGuard } from 'src/auth/guards/role.guard';
+import { UserRole } from 'src/users/enums/roles';
+import { Roles } from 'src/auth/decorators/role.decorator';
 
 @Controller('articles')
 export class ArticlesController {
@@ -38,6 +42,9 @@ export class ArticlesController {
     }
 
     @Post()
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(UserRole.ADMIN)
     @ApiOperation({ summary: 'Создать статью' })
     @ApiConsumes('multipart/form-data')
     @ApiCreatedResponse({ type: ArticleEntity })
@@ -73,6 +80,9 @@ export class ArticlesController {
     }
 
     @Patch(':id')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(UserRole.ADMIN)
     @ApiOperation({ summary: 'Обновить статью' })
     @ApiParam({ name: 'id', example: '1', description: 'ID статьи' })
     @ApiResponse({ status: 200, description: 'Статья успешно обновлена' })
@@ -127,6 +137,9 @@ export class ArticlesController {
     }
 
     @Delete(':id')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(UserRole.ADMIN)
     @ApiOperation({ summary: 'Удалить статью' })
     @ApiParam({ name: 'id', example: '1', description: 'ID статьи' })
     @ApiResponse({ status: 200, description: 'Статья успешно удалена' })

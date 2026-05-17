@@ -31,7 +31,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(payload: any) {
         this.logger.log(`Validating payload:`, payload);
-        console.log(payload)
         const user = await this.usersService.findOneById(payload.sub);
 
         if (!user || user.isBlocked) {
@@ -43,6 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             userId: payload.sub,
             username: payload.username,
             email: payload.email,
+            role: payload.role
         };
     }
 }

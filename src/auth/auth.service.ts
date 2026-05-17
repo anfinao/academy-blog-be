@@ -10,6 +10,7 @@ export interface UserPayload {
     id: string;
     username: string;
     email: string;
+    role: string;
 }
 
 @Injectable()
@@ -46,6 +47,7 @@ export class AuthService {
             sub: user.id,
             username: user.username,
             email: user.email,
+            role: user.role
         };
 
         const accessToken = this.jwtService.sign(payload);
@@ -62,6 +64,7 @@ export class AuthService {
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                role: user.role
             },
         };
     }
@@ -113,6 +116,7 @@ export class AuthService {
             sub: user.id,
             username: user.username,
             email: user.email,
+            role: user.role
         };
 
         const newAccessToken = this.jwtService.sign(payload);

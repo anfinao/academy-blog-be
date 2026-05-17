@@ -37,6 +37,7 @@ import { RefreshToken } from './users/data/entities/refresh-token.entity';
             serveRoot: '/uploads',
         }),
         GraphQLModule.forRoot<ApolloDriverConfig>({
+            context: ({ req, res }) => ({ req, res }),
             driver: ApolloDriver,
             autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
             sortSchema: true,
