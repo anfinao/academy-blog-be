@@ -1,6 +1,8 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { Field, ID, ObjectType } from "@nestjs/graphql";
+import { ArticleEntity } from "src/articles/data/entities/article/article.entity";
+import { CommentEntity } from "src/articles/data/entities/comment/comment.entity";
 
 @Entity('user')
 @ObjectType()
@@ -44,4 +46,10 @@ export class UserEntity {
     @ApiProperty({ example: false, description: 'Признак блокировки пользователя' })
     @Column({ default: false })
     isBlocked: boolean;
+
+    @OneToMany(() => ArticleEntity, (article) => article.author)
+    articles: ArticleEntity[];
+
+    @OneToMany(() => CommentEntity, (comment) => comment.author)
+    comments: CommentEntity[];
 }

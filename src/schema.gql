@@ -3,6 +3,7 @@
 # ------------------------------------------------------
 
 type ArticleEntity {
+  author: UserEntity
   avgRating: Float
   category: CategoryEntity
   categoryId: String
@@ -42,6 +43,7 @@ type CategoryEntity {
 type CommentEntity {
   article: ArticleEntity!
   articleId: String!
+  author: UserEntity
   avgRating: Float!
   content: String!
   createdAt: DateTime!
@@ -97,4 +99,15 @@ input UpdateArticleInput {
   content: String!
   imgSrc: String
   title: String!
+}
+
+type UserEntity {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  isBlocked: Boolean!
+  lastActiveTime: DateTime
+  password: String!
+  updatedAt: DateTime!
+  username: String!
 }

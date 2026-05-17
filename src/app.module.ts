@@ -11,14 +11,17 @@ import { join } from 'path';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { EventsGateway } from './articles/core/websocket/events.gateway';
+import { UserEntity } from './users/data/entities/user.entity';
+import { UsersModule } from './users/users.module';
 
 @Module({
     imports: [
         ArticlesModule,
+        UsersModule,
         TypeOrmModule.forRoot({
             type: 'sqlite',
             database: 'blog.db',
-            entities: [ArticleEntity, CommentEntity, CategoryEntity],
+            entities: [ArticleEntity, CommentEntity, CategoryEntity, UserEntity],
             synchronize: true,
             logging: false,
         }),
