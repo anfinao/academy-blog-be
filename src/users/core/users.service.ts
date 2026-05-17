@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UserEntity } from '../data/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { UserRole } from '../enums/roles';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +31,7 @@ export class UsersService {
             username,
             email,
             password: hashedPassword,
+            role: createUserDto.role ?? UserRole.USER,
             lastActiveTime: new Date(),
         });
 

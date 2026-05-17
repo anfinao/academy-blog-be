@@ -1,6 +1,7 @@
 import { Field, InputType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
+import { UserRole } from "../enums/roles";
 
 @InputType()
 export class CreateUserDto {
@@ -23,4 +24,7 @@ export class CreateUserDto {
     @IsNotEmpty()
     @MinLength(6)
     password: string;
+
+    isAdmin?: boolean;
+    role?: UserRole;
 }

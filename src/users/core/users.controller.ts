@@ -2,6 +2,7 @@ import { Controller, Post, Body, Param, Delete, HttpCode, HttpStatus, UseGuards 
 import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { UserRole } from '../enums/roles';
 
 @ApiTags('Users')
 @Controller('users')
@@ -15,7 +16,9 @@ export class UsersController {
     @ApiResponse({ status: 201, description: 'Пользователь успешно зарегистрирован' })
     @ApiResponse({ status: 409, description: 'Пользователь с таким именем или email уже существует' })
     async register(@Body() createUserDto: CreateUserDto) {
-        const user = await this.usersService.registerUser(createUserDto);
+        const user = await this.usersService.registerUser(createUserDto.isAdmin
+            ? { role: UserRole.ADMIN, ...createUserDto }
+            : createUserDto);
         return {
             message: 'Пользователь успешно зарегистрирован',
             user: {
@@ -25,6 +28,7 @@ export class UsersController {
                 createdAt: user.createdAt,
                 lastActiveTime: user.lastActiveTime,
                 isBlocked: user.isBlocked,
+                role: user.role,
             },
         };
     }

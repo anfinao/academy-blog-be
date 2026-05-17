@@ -108,6 +108,7 @@ type UserEntity {
   isBlocked: Boolean!
   lastActiveTime: DateTime
   password: String!
+  role: String!
   updatedAt: DateTime!
   username: String!
 }

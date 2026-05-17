@@ -3,6 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Field, ID, ObjectType } from "@nestjs/graphql";
 import { ArticleEntity } from "src/articles/data/entities/article/article.entity";
 import { CommentEntity } from "src/articles/data/entities/comment/comment.entity";
+import { UserRole } from "src/users/enums/roles";
 
 @Entity('user')
 @ObjectType()
@@ -26,6 +27,11 @@ export class UserEntity {
     @ApiProperty({ example: 'hashed_password', description: 'Хеш пароля' })
     @Column()
     password: string;
+
+    @Field(() => String)
+    @ApiProperty({ example: 'user', description: 'Роль пользователя', enum: UserRole })
+    @Column({ default: UserRole.USER })
+    role: UserRole;
 
     @Field()
     @ApiProperty({ example: '2024-01-01T00:00:00Z', description: 'Время создания' })
