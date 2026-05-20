@@ -1,6 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ArticleEntity } from "../article/article.entity";
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql";
+import { UserEntity } from "src/users/data/entities/user.entity";
+import { ApiProperty } from "@nestjs/swagger";
 
 @ObjectType()
 @Entity('comment')
@@ -41,6 +43,15 @@ export class CommentEntity {
     @Field(() => Int, { defaultValue: 0 })
     @Column({ default: 0 })
     votesCount: number;
+
+    @ApiProperty({ example: 'uuid-123', description: 'ID автора комментария' })
+    @Column({ nullable: true })
+    authorId?: string;
+
+    @Field(() => UserEntity, { nullable: true })
+    @ManyToOne(() => UserEntity, (user) => user.comments, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'authorId' })
+    author?: UserEntity;
 
     @Field()
     @CreateDateColumn()

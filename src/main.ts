@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
+import { AppModule } from './app.module';
 import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
@@ -16,7 +16,7 @@ async function bootstrap() {
         .setTitle('Blog API')
         .setDescription('API документация')
         .setVersion('1.0')
-        //.addBearerAuth()
+        .addBearerAuth()
         .build();
 
     const document = SwaggerModule.createDocument(app, config);

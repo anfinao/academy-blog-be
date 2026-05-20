@@ -4,6 +4,7 @@ import { CategoryEntity } from "../category/category";
 import { ApiProperty } from "@nestjs/swagger";
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql";
 import { Transform } from "class-transformer";
+import { UserEntity } from "src/users/data/entities/user.entity";
 
 @Entity('article')
 @ObjectType()
@@ -68,4 +69,13 @@ export class ArticleEntity {
     @Field(() => Int, { defaultValue: 0, nullable: true })
     @Column({ default: 0, nullable: true })
     votesCount: number;
+
+    @ApiProperty({ example: 'uuid-123', description: 'ID автора статьи' })
+    @Column({ nullable: true })
+    authorId?: string;
+
+    @Field(() => UserEntity, { nullable: true })
+    @ManyToOne(() => UserEntity, (user) => user.articles, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'authorId' })
+    author?: UserEntity;
 }

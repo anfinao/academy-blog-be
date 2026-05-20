@@ -26,7 +26,7 @@ export class CommentsService {
         const result = await this.repository.save(comment);
 
         // Отправляем событие создания комментария
-        this.eventsGateway.sendToTopic(`article:${comment.articleId}`, 'comment-created', {
+        this.eventsGateway.sendToTopic(`article:${result.articleId}`, 'comment-created', {
             type: WEBSOCKET_TYPES.COMMENT_CREATED,
             payload: {
                 commentId: result.id,
@@ -68,8 +68,12 @@ export class CommentsService {
             relations: ['article', 'article.comments'],
         });
 
+        if (!result) {
+            throw new Error('Comment not found');
+        }
+
         // Отправляем событие изменения рейтинга комментария
-        this.eventsGateway.sendToTopic(`article:${comment.articleId}`, 'comment-rating-changed', {
+        this.eventsGateway.sendToTopic(`article:${result.articleId}`, 'comment-rating-changed', {
             type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
             payload: {
                 commentId: id,
@@ -143,7 +147,7 @@ export class CommentsService {
         const result = await this.repository.save(comment);
 
         // Отправляем событие изменения рейтинга комментария
-        this.eventsGateway.sendToTopic(`article:${comment.articleId}`, 'comment-rating-changed', {
+        this.eventsGateway.sendToTopic(`article:${result.articleId}`, 'comment-rating-changed', {
             type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
             payload: {
                 commentId,
