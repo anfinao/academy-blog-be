@@ -14,7 +14,10 @@ export class CommentsService {
     ) { }
 
     async findOne(id: string) {
-        return this.repository.findOneBy({ id });
+        return this.repository.findOne({
+            where: { id },
+            relations: ['article'],
+        });
     }
 
     // Создание комментария
@@ -53,7 +56,11 @@ export class CommentsService {
 
     // Увеличение рейтинга на 1
     async upRating(id: string) {
-        const comment = await this.repository.findOneBy({ id });
+        const comment = await this.repository.findOne({
+            where: { id },
+            relations: ['article'],
+        });
+
         if (!comment) {
             return null;
         }
@@ -77,7 +84,11 @@ export class CommentsService {
 
     // Уменьшение рейтинга на 1
     async downRating(id: string) {
-        const comment = await this.repository.findOneBy({ id });
+        const comment = await this.repository.findOne({
+            where: { id },
+            relations: ['article'],
+        });
+
         if (!comment) {
             return null;
         }
@@ -104,7 +115,10 @@ export class CommentsService {
             throw new Error('Оценка должна быть от 1 до 5');
         }
 
-        const comment = await this.repository.findOneBy({ id: commentId });
+        const comment = await this.repository.findOne({
+            where: { id: commentId },
+            relations: ['article'],
+        });
         if (!comment) {
             return null;
         }

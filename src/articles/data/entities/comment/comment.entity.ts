@@ -21,10 +21,10 @@ export class CommentEntity {
     @Column()
     articleId: string;
 
-    @Field(() => [ArticleEntity])
+    @Field(() => ArticleEntity)
     @ManyToOne(() => ArticleEntity, (article) => article.comments, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'articleId' })
-    article!: ArticleEntity;
+    article: ArticleEntity;
 
     @Field({ defaultValue: 0 })
     @Column({ default: 0 })
