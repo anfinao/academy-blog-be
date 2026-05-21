@@ -58,7 +58,7 @@ export class CommentsService {
     async upRating(id: string) {
         const comment = await this.repository.findOne({
             where: { id },
-            relations: ['article'],
+            relations: ['article', 'article.comments'],
         });
 
         if (!comment) {
@@ -86,7 +86,7 @@ export class CommentsService {
     async downRating(id: string) {
         const comment = await this.repository.findOne({
             where: { id },
-            relations: ['article'],
+            relations: ['article', 'article.comments'],
         });
 
         if (!comment) {
@@ -117,7 +117,7 @@ export class CommentsService {
 
         const comment = await this.repository.findOne({
             where: { id: commentId },
-            relations: ['article'],
+            relations: ['article', 'article.comments'],
         });
         if (!comment) {
             return null;
