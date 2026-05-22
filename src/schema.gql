@@ -40,7 +40,7 @@ type CategoryEntity {
 }
 
 type CommentEntity {
-  article: [ArticleEntity!]!
+  article: ArticleEntity!
   articleId: String!
   avgRating: Float!
   content: String!
