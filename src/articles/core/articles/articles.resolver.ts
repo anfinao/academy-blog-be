@@ -51,6 +51,11 @@ export class ArticlesResolver {
         return this.articlesService.ratingDown(id);
     }
 
+    @Mutation(() => ArticleEntity)
+    async articleUpdateRating(@Args('id', { type: () => ID }) id: string, @Args('rating') rating: number) {
+        return this.articlesService.updateRating(id, rating);
+    }
+
     @Mutation(() => Boolean)
     async removeArticle(@Args('id', { type: () => ID }) id: string) {
         await this.articlesService.remove(id);
