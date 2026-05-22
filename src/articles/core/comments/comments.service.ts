@@ -51,25 +51,22 @@ export class CommentsService {
         });
     }
 
-    // Изменение рейтинга комментария
-    async updateRating(id: string, rating: number) {
-        await this.repository.update(id, { rating });
-        return this.repository.findOneBy({ id });
-    }
-
-    // Увеличение рейтинга на 1
-    async upRating(id: string) {
-        const comment = await this.repository.findOne({
-            where: { id },
-            relations: ['article', 'article.comments'],
-        });
+    async updateRating(id: string, rating: number, commentEntity?: CommentEntity | null) {
+        const comment = commentEntity
+            ? commentEntity
+            : await this.repository.findOneBy({ id });
 
         if (!comment) {
             return null;
         }
-        const prevRating = comment.rating || 0;
-        comment.rating = prevRating + 1;
-        const result = await this.repository.save(comment);
+
+        const prevRating = comment.rating;
+        await this.repository.update(id, { rating });
+
+        const result = await this.repository.findOne({
+            where: { id },
+            relations: ['article', 'article.comments'],
+        });
 
         // Отправляем событие изменения рейтинга комментария
         this.eventsGateway.sendToTopic(`article:${comment.articleId}`, 'comment-rating-changed', {
@@ -77,10 +74,24 @@ export class CommentsService {
             payload: {
                 commentId: id,
                 articleId: comment.articleId,
-                rating: result.rating,
+                rating: result?.rating,
                 prevRating,
             },
         });
+
+        return result;
+    }
+
+    // Увеличение рейтинга на 1
+    async upRating(id: string) {
+        const comment = await this.repository.findOneBy({ id });
+
+        if (!comment) {
+            return null;
+        }
+        const prevRating = comment.rating || 0;
+        const newRating = prevRating + 1;
+        const result = await this.updateRating(id, newRating, comment);
 
         return result;
     }
@@ -96,19 +107,8 @@ export class CommentsService {
             return null;
         }
         const prevRating = comment.rating || 0;
-        comment.rating = prevRating - 1;
-        const result = await this.repository.save(comment);
-
-        // Отправляем событие изменения рейтинга комментария
-        this.eventsGateway.sendToTopic(`article:${comment.articleId}`, 'comment-rating-changed', {
-            type: WEBSOCKET_TYPES.COMMENT_RATING_CHANGED,
-            payload: {
-                commentId: id,
-                articleId: comment.articleId,
-                rating: result.rating,
-                prevRating,
-            },
-        });
+        const newRating = prevRating - 1;
+        const result = await this.updateRating(id, newRating, comment);
 
         return result;
     }
