@@ -37,7 +37,10 @@ export class CommentsService {
             },
         });
 
-        return result;
+        return this.repository.findOne({
+            where: { id: result.id },
+            relations: ['article', 'article.comments'],
+        });
     }
 
     // Получение комментариев по ID статьи
