@@ -8,6 +8,13 @@ import { CreateCommentInput } from 'src/articles/dto/comment/create-comment.inpu
 export class CommentsController {
     constructor(private readonly commentsService: CommentsService) { }
 
+    @Get('count')
+    @ApiOperation({ summary: 'Получить кол-во комментариев' })
+    @ApiResponse({ status: 200, description: 'Кол-во комментариев получен' })
+    getCountComments() {
+        return this.commentsService.getCount();
+    }
+
     @Post()
     @ApiOperation({ summary: 'Создать новый комментарий' })
     @ApiBody({

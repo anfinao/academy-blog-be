@@ -20,6 +20,10 @@ export class CommentsService {
         });
     }
 
+    async getCount() {
+        return this.repository.count();
+    }
+
     // Создание комментария
     async create(dto: Partial<CommentEntity>) {
         const comment = this.repository.create(dto);
