@@ -133,4 +133,24 @@ export class ArticlesController {
     public remove(@Param('id') id: string) {
         return this.articlesService.remove(id);
     }
+
+    @Post('vote/:id')
+    @ApiOperation({ summary: 'Поставить оценку статье (1-5)' })
+    @ApiParam({ name: 'id', description: 'ID статьи' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                vote: { type: 'number', example: 5, description: 'Оценка от 1 до 5' },
+            },
+            required: ['vote'],
+        },
+    })
+    @ApiResponse({ status: 200, description: 'Голос успешно добавлен' })
+    vote(
+        @Param('id') articleId: string,
+        @Body('vote') vote: number,
+    ) {
+        return this.articlesService.addVote(articleId, vote);
+    }
 }
