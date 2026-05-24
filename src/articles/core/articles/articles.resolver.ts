@@ -42,6 +42,11 @@ export class ArticlesResolver {
     }
 
     @Mutation(() => ArticleEntity)
+    async articleUpdateRating(@Args('id', { type: () => ID }) id: string, @Args('rating') rating: number) {
+        return this.articlesService.updateRating(id, rating);
+    }
+
+    @Mutation(() => ArticleEntity)
     async articleRatingUp(@Args('id', { type: () => ID }) id: string) {
         return this.articlesService.ratingUp(id);
     }

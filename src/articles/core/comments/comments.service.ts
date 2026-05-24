@@ -43,6 +43,10 @@ export class CommentsService {
         });
     }
 
+    async getCount() {
+        return this.repository.count();
+    }
+
     // Получение комментариев по ID статьи
     async findByArticle(articleId: string) {
         return this.repository.find({
