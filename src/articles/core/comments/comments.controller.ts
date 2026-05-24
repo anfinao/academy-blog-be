@@ -92,4 +92,12 @@ export class CommentsController {
     ) {
         return this.commentsService.addVote(commentId, vote);
     }
+
+
+    @Get('count')
+    @ApiOperation({ summary: 'Получить кол-во комментариев' })
+    @ApiResponse({ status: 200, description: 'Кол-во комментариев получен' })
+    getCountComments() {
+        return this.commentsService.getCount();
+    }
 }

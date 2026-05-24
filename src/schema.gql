@@ -76,6 +76,7 @@ scalar DateTime
 type Mutation {
   articleRatingDown(id: ID!): ArticleEntity!
   articleRatingUp(id: ID!): ArticleEntity!
+  articleUpdateRating(id: ID!, rating: Float!): ArticleEntity!
   commentRatingDown(id: ID!): CommentEntity!
   commentRatingUp(id: ID!): CommentEntity!
   createArticle(createArticleInput: CreateArticleDto!): ArticleEntity!
