@@ -9,26 +9,26 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-    imports: [
-        ConfigModule,
-        TypeOrmModule.forFeature([RefreshToken]),
-        JwtModule.registerAsync({
-            imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => {
-                const secret = configService.get<string>('JWT_SECRET');
-                return {
-                    secret: secret,
-                    signOptions: {
-                        expiresIn: '1h',
-                    },
-                };
-            },
-            inject: [ConfigService],
-        }),
-        UsersModule,
-    ],
-    controllers: [AuthController],
-    providers: [AuthService, JwtStrategy],
-    exports: [AuthService],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([RefreshToken]),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        return {
+          secret: secret,
+          signOptions: {
+            expiresIn: '1h',
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
+    UsersModule,
+  ],
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy],
+  exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

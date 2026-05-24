@@ -12,18 +12,30 @@ import { CategoryEntity } from './data/entities/category/category';
 import { ArticlesResolver } from './core/articles/articles.resolver';
 import { CommentsResolver } from './core/comments/comments.resolver';
 import { EventsGateway } from './core/websocket/events.gateway';
+import { ArticleVoteEntity } from './data/entities/article-vote/article-vote.entity';
+import { CommentVoteEntity } from './data/entities/comment-vote/comment-vote.entity';
+import { UserEntity } from 'src/users/data/entities/user.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([ArticleEntity, CommentEntity, CategoryEntity])],
-    controllers: [ArticlesController, CommentsController, CategoriesController],
-    providers: [
-        ArticlesService,
-        ArticlesResolver,
-        CommentsService,
-        CommentsResolver,
-        CategoriesService,
-        EventsGateway
-    ],
-    exports: [EventsGateway],
+  imports: [
+    TypeOrmModule.forFeature([
+      ArticleEntity,
+      CommentEntity,
+      CategoryEntity,
+      UserEntity,
+      ArticleVoteEntity,
+      CommentVoteEntity,
+    ]),
+  ],
+  controllers: [ArticlesController, CommentsController, CategoriesController],
+  providers: [
+    ArticlesService,
+    ArticlesResolver,
+    CommentsService,
+    CommentsResolver,
+    CategoriesService,
+    EventsGateway,
+  ],
+  exports: [EventsGateway],
 })
-export class ArticlesModule { }
+export class ArticlesModule {}
