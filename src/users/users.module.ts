@@ -6,9 +6,9 @@ import { UsersService } from './core/users.service';
 import { RefreshToken } from './data/entities/refresh-token.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UserEntity, RefreshToken])],
-    controllers: [UsersController],
-    providers: [UsersService],
-    exports: [UsersService, TypeOrmModule],
+  imports: [TypeOrmModule.forFeature([UserEntity, RefreshToken])],
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService, TypeOrmModule],
 })
-export class UsersModule { }
+export class UsersModule {}

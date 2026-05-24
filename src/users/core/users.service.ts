@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -9,117 +14,125 @@ import { RefreshToken } from '../data/entities/refresh-token.entity';
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @InjectRepository(UserEntity)
-        private readonly userRepository: Repository<UserEntity>,
-        @InjectRepository(RefreshToken)
-        private readonly refreshTokenRepository: Repository<RefreshToken>,
-    ) { }
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
+  ) {}
 
-    async registerUser(createUserDto: CreateUserDto): Promise<UserEntity> {
-        const { username, email, password } = createUserDto;
+  async registerUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const { username, email, password } = createUserDto;
 
-        const existingUser = await this.userRepository.findOne({
-            where: [{ username }, { email }],
-        });
+    const existingUser = await this.userRepository.findOne({
+      where: [{ username }, { email }],
+    });
 
-        if (existingUser) {
-            throw new ConflictException('Пользователь с таким именем или email уже существует');
-        }
-
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        const user = this.userRepository.create({
-            username,
-            email,
-            password: hashedPassword,
-            role: createUserDto.role ?? UserRole.USER,
-            lastActiveTime: new Date(),
-        });
-
-        return this.userRepository.save(user);
+    if (existingUser) {
+      throw new ConflictException(
+        'Пользователь с таким именем или email уже существует',
+      );
     }
 
-    async blockUser(userId: string): Promise<UserEntity> {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        if (!user) {
-            throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
-        }
+    const user = this.userRepository.create({
+      username,
+      email,
+      password: hashedPassword,
+      role: createUserDto.role ?? UserRole.USER,
+      lastActiveTime: new Date(),
+    });
 
-        if (user.isBlocked) {
-            throw new BadRequestException(`Пользователь ${user.username} уже заблокирован`);
-        }
+    return this.userRepository.save(user);
+  }
 
-        user.isBlocked = true;
-        return this.userRepository.save(user);
+  async blockUser(userId: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
     }
 
-    async unblockUser(userId: string): Promise<UserEntity> {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-
-        if (!user) {
-            throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
-        }
-
-        if (!user.isBlocked) {
-            throw new BadRequestException(`Пользователь ${user.username} не заблокирован`);
-        }
-
-        user.isBlocked = false;
-        return this.userRepository.save(user);
+    if (user.isBlocked) {
+      throw new BadRequestException(
+        `Пользователь ${user.username} уже заблокирован`,
+      );
     }
 
-    async deleteUser(userId: string): Promise<void> {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
+    user.isBlocked = true;
+    return this.userRepository.save(user);
+  }
 
-        if (!user) {
-            throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
-        }
+  async unblockUser(userId: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
-        await this.userRepository.delete(userId);
+    if (!user) {
+      throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
     }
 
-    async findOne(userId: string): Promise<UserEntity | null> {
-        return this.userRepository.findOne({ where: { id: userId } });
+    if (!user.isBlocked) {
+      throw new BadRequestException(
+        `Пользователь ${user.username} не заблокирован`,
+      );
     }
 
-    async findOneById(userId: string): Promise<UserEntity | null> {
-        return this.userRepository.findOne({ where: { id: userId } });
+    user.isBlocked = false;
+    return this.userRepository.save(user);
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
     }
 
-    async findOneByUsername(username: string): Promise<UserEntity | null> {
-        return this.userRepository.findOne({ where: { username } });
-    }
+    await this.userRepository.delete(userId);
+  }
 
-    async findOneByLogin(login: string): Promise<UserEntity | null> {
-        return this.userRepository.findOne({
-            where: [{ username: login }, { email: login }]
-        });
-    }
+  async findOne(userId: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { id: userId } });
+  }
 
-    async findOneByEmail(email: string): Promise<UserEntity | null> {
-        return this.userRepository.findOne({ where: { email } });
-    }
+  async findOneById(userId: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { id: userId } });
+  }
 
-    async updateLastActive(userId: string): Promise<void> {
-        await this.userRepository.update(userId, { lastActiveTime: new Date() });
-    }
+  async findOneByUsername(username: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { username } });
+  }
 
-    async createRefreshToken(refreshToken: RefreshToken): Promise<RefreshToken> {
-        return this.refreshTokenRepository.save(refreshToken);
-    }
+  async findOneByLogin(login: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: [{ username: login }, { email: login }],
+    });
+  }
 
-    async findRefreshTokenByToken(token: string): Promise<RefreshToken | null> {
-        return this.refreshTokenRepository.findOne({ where: { token } });
-    }
+  async findOneByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { email } });
+  }
 
-    async revokeRefreshToken(tokenId: string): Promise<void> {
-        await this.refreshTokenRepository.update(tokenId, { isRevoked: true });
-    }
+  async updateLastActive(userId: string): Promise<void> {
+    await this.userRepository.update(userId, { lastActiveTime: new Date() });
+  }
 
-    async findRefreshTokensByUserId(userId: string): Promise<RefreshToken[]> {
-        return this.refreshTokenRepository.find({ where: { userId, isRevoked: false } });
-    }
+  async createRefreshToken(refreshToken: RefreshToken): Promise<RefreshToken> {
+    return this.refreshTokenRepository.save(refreshToken);
+  }
+
+  async findRefreshTokenByToken(token: string): Promise<RefreshToken | null> {
+    return this.refreshTokenRepository.findOne({ where: { token } });
+  }
+
+  async revokeRefreshToken(tokenId: string): Promise<void> {
+    await this.refreshTokenRepository.update(tokenId, { isRevoked: true });
+  }
+
+  async findRefreshTokensByUserId(userId: string): Promise<RefreshToken[]> {
+    return this.refreshTokenRepository.find({
+      where: { userId, isRevoked: false },
+    });
+  }
 }
