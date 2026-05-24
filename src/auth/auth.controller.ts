@@ -31,7 +31,7 @@ export class AuthController {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRATION || '7') * 24 * 60 * 60 * 1000, // в миллисекундах
-            path: '/auth',
+            path: '',
         });
 
         // Возвращаем только access токен в ответе
@@ -53,7 +53,7 @@ export class AuthController {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRATION || '7') * 24 * 60 * 60 * 1000,
-            path: '/auth',
+            path: '/',
         });
 
         const result = await this.authService.refreshAccessToken(refreshToken);
